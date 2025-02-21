@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3490dc;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold mb-4">AI Image Generator</h1>
+        <form id="promptForm" class="mb-4">
+            <input type="text" id="promptInput" placeholder="Enter your prompt" class="w-full p-2 mb-4 border rounded" required>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Generate Image</button>
+        </form>
+        <div id="imageContainer" class="text-center">
+            <p class="text-gray-700" id="placeholderText">Image will be displayed here</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('promptForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const promptInput = document.getElementById('promptInput');
+            const prompt = promptInput.value;
+            const imageContainer = document.getElementById('imageContainer');
+            imageContainer.innerHTML = '<div class="spinner mx-auto"></div>';
+            
+            fetch("https://backend.buildpicoapps.com/aero/run/image-generation-api?pk=v1-Z0FBQUFBQm51R29oVnRQSFNsYk5JRW5DWDF4YzBlOG4yWGpoN3RvX3VvcGl6eVV6UzlpeWJsVEduZ0ZNc0swa3V3cDRMLThmMDZibzZ5ZkJOcXlSc2lCZHRWOFhLYlVwdWpWdDBLRkpzWmwxelB2bTc1Z0xpNEU9", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    imageContainer.innerHTML = `<img src="${data.imageUrl}" alt="Generated Image" class="mx-auto mt-4" />`;
+                } else {
+                    imageContainer.innerHTML = `<p class="text-red-500">Failed to generate image. Error: ${data.status}</p>`;
+                    console.error("API error:", data);
+                }
+            })
+            .catch(error => {
+                imageContainer.innerHTML = `<p class="text-red-500">There was an error contacting the server.</p>`;
+                console.error("Network error:", error);
+            });
+        });
+    </script>
+</body>
+</html>
